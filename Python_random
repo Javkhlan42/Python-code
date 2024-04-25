@@ -1,71 +1,85 @@
-import mysql.connector
-from mysql.connector import Error
-import random
-
+# MySQL холболтыг үүсгэх хэсэг
+import mysql.connector  # MySQL холбогч санг импортлох
+from mysql.connector import Error  # MySQL холбогч сангаас Error класс импортлох
+import random  # Санамсаргүй өгөгдөл үүсгэхийн тулд random модулийг импортлох
+ 
+ 
 def connect_fetch_data():
-    """ Connect to MySQL database and fetch data """
-    conn = None
+    """  MySQL database холболт хийж өгөгдлийг татах  """
+    conn = None  # Холболтын connection хувьсагчид анхны утга оноох
     try:
+ 
+        #Өгөгдсөн шаардалагын дагуу MySQL өгөгдлийн сантай холболт үүсгэх хэсэг
+        #Host-host-ийн нэр
+        #datadbase- өгөгдлийн сангийн нэр
+        #user- холбогдох хэрэглэгчийн нэр
+        #password- нэвтрэх нууц үг
+ 
         conn = mysql.connector.connect(host='localhost',
                                        database='enh',
                                        user='root',
                                        password='4gamerz984')
-        if conn.is_connected():
+       
+        if conn.is_connected():  # Холболт амжилттай болсныг шалгах хэсэг
             print('Connected to MySQL database')
-            cursor = conn.cursor()
-
-            # Fetch students
+            cursor = conn.cursor()  # SQL асуулгыг гүйцэтгэх курсор объект үүсгэх хэсэг
+ 
+            #'Students' хүснэгтээс өгөгдлийг авах хэсэг
             cursor.execute("SELECT Name, Student_id FROM Students")
-            students = cursor.fetchall()
-
-            # Fetch topics
+            students = cursor.fetchall()  # Үр дүнгээсс бүх өгөгдлийг татаж авах хэсэг
+ 
+            # 'Team_work' хүснэгтээс агуулгын өгөгдлийг авах хэсэг
             cursor.execute("SELECT Aguulga FROM Team_work")
-            topics = [item[0] for item in cursor.fetchall()]
-
+            topics = [item[0] for item in cursor.fetchall()]  # Үр дүнгээсс бүх өгөгдлийг татаж авах хэсэг
+ 
+            # Татсан өгөгдлөө буцаах хэсэг
             return students, topics
     except Error as e:
-        print(e)
+        print(e)  # Алдаа гарвал алдааны мэдээлэл хэвлэнэ
     finally:
         if conn is not None and conn.is_connected():
-            conn.close()
-
-def distribute_students_to_topics(students, topics):
-    """ Distribute students ensuring teams have variable sizes with at least 3 members """
-    random.shuffle(students)
-    assignments = {topic: [] for topic in topics}
-    assigned_students = set()
-
-    base_size = len(students) // len(topics)
-    extra = len(students) % len(topics)
-
-    student_iter = iter(students)
+            conn.close()  # Өгөгдлийн сантай хийсэн холболтоо хаах хэсэг# MySQL холболтыг үүсгэх хэсэг
+import mysql.connector  # MySQL холбогч санг импортлох
+from mysql.connector import Error  # MySQL холбогч сангаас Error класс импортлох
+import random  # Санамсаргүй өгөгдөл үүсгэхийн тулд random модулийг импортлох
+ 
+ 
+def connect_fetch_data():
+    """  MySQL database холболт хийж өгөгдлийг татах  """
+    conn = None  # Холболтын connection хувьсагчид анхны утга оноох
     try:
-        for topic in topics:
-            target_size = base_size + (1 if extra > 0 else 0)
-            extra -= 1
+ 
+        #Өгөгдсөн шаардалагын дагуу MySQL өгөгдлийн сантай холболт үүсгэх хэсэг
+        #Host-host-ийн нэр
+        #datadbase- өгөгдлийн сангийн нэр
+        #user- холбогдох хэрэглэгчийн нэр
+        #password- нэвтрэх нууц үг
+ 
+        conn = mysql.connector.connect(host='localhost',
+                                       database='enh',
+                                       user='root',
+                                       password='4gamerz984')
+       
+        if conn.is_connected():  # Холболт амжилттай болсныг шалгах хэсэг
+            print('Connected to MySQL database')
+            cursor = conn.cursor()  # SQL асуулгыг гүйцэтгэх курсор объект үүсгэх хэсэг
+ 
+            #'Students' хүснэгтээс өгөгдлийг авах хэсэг
+            cursor.execute("SELECT Name, Student_id FROM Students")
+            students = cursor.fetchall()  # Үр дүнгээсс бүх өгөгдлийг татаж авах хэсэг
+ 
+            # 'Team_work' хүснэгтээс агуулгын өгөгдлийг авах хэсэг
+            cursor.execute("SELECT Aguulga FROM Team_work")
+            topics = [item[0] for item in cursor.fetchall()]  # Үр дүнгээсс бүх өгөгдлийг татаж авах хэсэг
+ 
+            # Татсан өгөгдлөө буцаах хэсэг
+            return students, topics
+    except Error as e:
+        print(e)  # Алдаа гарвал алдааны мэдээлэл хэвлэнэ
+    finally:
+        if conn is not None and conn.is_connected():
+            conn.close()  # Өгөгдлийн сантай хийсэн холболтоо хаах хэсэг
+has context menu
 
-            while len(assignments[topic]) < target_size:
-                student = next(student_iter)
-                if student[1] not in assigned_students:
-                    assignments[topic].append(student)
-                    assigned_students.add(student[1])
-    except StopIteration:
-        print("Not enough students to assign at least three to each topic.")
 
-    return assignments
-
-def print_assignments(assignments):
-    """ Print the assignments of students to topics """
-    for topic, students in assignments.items():
-        print(f"{topic} ({len(students)} students):")
-        for student in students:
-            print(f"    {student[0]}, '{student[1]}'")
-
-def main():
-    students, topics = connect_fetch_data()
-    if students and topics:
-        assignments = distribute_students_to_topics(students, topics)
-        print_assignments(assignments)
-
-if __name__ == "__main__":
-    main()
+has context menu
