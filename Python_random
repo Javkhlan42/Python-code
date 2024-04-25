@@ -1,0 +1,71 @@
+import mysql.connector
+from mysql.connector import Error
+import random
+
+def connect_fetch_data():
+    """ Connect to MySQL database and fetch data """
+    conn = None
+    try:
+        conn = mysql.connector.connect(host='localhost',
+                                       database='enh',
+                                       user='root',
+                                       password='4gamerz984')
+        if conn.is_connected():
+            print('Connected to MySQL database')
+            cursor = conn.cursor()
+
+            # Fetch students
+            cursor.execute("SELECT Name, Student_id FROM Students")
+            students = cursor.fetchall()
+
+            # Fetch topics
+            cursor.execute("SELECT Aguulga FROM Team_work")
+            topics = [item[0] for item in cursor.fetchall()]
+
+            return students, topics
+    except Error as e:
+        print(e)
+    finally:
+        if conn is not None and conn.is_connected():
+            conn.close()
+
+def distribute_students_to_topics(students, topics):
+    """ Distribute students ensuring teams have variable sizes with at least 3 members """
+    random.shuffle(students)
+    assignments = {topic: [] for topic in topics}
+    assigned_students = set()
+
+    base_size = len(students) // len(topics)
+    extra = len(students) % len(topics)
+
+    student_iter = iter(students)
+    try:
+        for topic in topics:
+            target_size = base_size + (1 if extra > 0 else 0)
+            extra -= 1
+
+            while len(assignments[topic]) < target_size:
+                student = next(student_iter)
+                if student[1] not in assigned_students:
+                    assignments[topic].append(student)
+                    assigned_students.add(student[1])
+    except StopIteration:
+        print("Not enough students to assign at least three to each topic.")
+
+    return assignments
+
+def print_assignments(assignments):
+    """ Print the assignments of students to topics """
+    for topic, students in assignments.items():
+        print(f"{topic} ({len(students)} students):")
+        for student in students:
+            print(f"    {student[0]}, '{student[1]}'")
+
+def main():
+    students, topics = connect_fetch_data()
+    if students and topics:
+        assignments = distribute_students_to_topics(students, topics)
+        print_assignments(assignments)
+
+if __name__ == "__main__":
+    main()
